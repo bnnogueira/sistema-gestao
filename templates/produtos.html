@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Produtos</title>
+</head>
+<body>
+    <h1>📦 Cadastro de Produtos</h1>
+    <a href="/">← Voltar ao início</a>
+
+    <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+    {% if produto %}
+        <!-- Se existe um produto selecionado, mostra formulário de edição -->
+        <h2>Editar Produto</h2>
+        <form action="/produtos/atualizar" method="POST">
+            <input type="hidden" name="id" value="{{ produto[0] }}">
+            <label>Nome:</label>
+            <input type="text" name="nome" value="{{ produto[1] }}" required><br><br>
+            <label>Preço:</label>
+            <input type="number" name="preco" step="0.01" value="{{ produto[2] }}" required><br><br>
+            <label>Estoque:</label>
+            <input type="number" name="estoque" value="{{ produto[3] }}" required><br><br>
+            <button type="submit">💾 Salvar alterações</button>
+        </form>
+    {% else %}
+        <!-- Senão, mostra formulário de cadastro -->
+        <h2>Novo Produto</h2>
+        <form action="/produtos/cadastrar" method="POST">
+            <label>Nome:</label>
+            <input type="text" name="nome" required><br><br>
+            <label>Preço:</label>
+            <input type="number" name="preco" step="0.01" required><br><br>
+            <label>Estoque:</label>
+            <input type="number" name="estoque" required><br><br>
+            <button type="submit">✅ Cadastrar</button>
+        </form>
+    {% endif %}
+
+    <hr>
+
+    <!-- LISTA DE PRODUTOS -->
+    <h2>Produtos Cadastrados</h2>
+    {% if produtos %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+            </tr>
+            {% for p in produtos %}
+            <tr>
+                <td>{{ p[0] }}</td>
+                <td>{{ p[1] }}</td>
+                <td>R$ {{ "%.2f"|format(p[2]) }}</td>
+                <td>{{ p[3] }}</td>
+                <td>
+                    <a href="/produtos/editar/{{ p[0] }}">✏️ Editar</a> |
+                    <a href="/produtos/deletar/{{ p[0] }}"
+                       onclick="return confirm('Deseja deletar este produto?')">
+                       🗑️ Deletar
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Nenhum produto cadastrado ainda.</p>
+    {% endif %}
+</body>
+</html>

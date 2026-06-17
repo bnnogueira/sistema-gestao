@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 import banco
 
 # Cria a aplicação Flask
@@ -49,7 +49,7 @@ def editar_produto(id):
     # Exibe o formulário preenchido com os dados do produto para edição.
     # <int:id> -> captura o id da URL, ex: /produtos/editar/3
     produto = banco.buscar_produto_por_id(id)
-    return render_template("produtos.html", produto=produto, produto=banco.listar_produtos())
+    return render_template("produtos.html", produto=produto, produtos=banco.listar_produtos())
 
 @app.route("/produtos/atualizar", methods=["POST"])
 def atualizar_produto():
