@@ -51,5 +51,100 @@ def criar_tabelas():
     conn.close()    # fecha a conexão (importante sempre fechar!)
     print("Banco de dados pronto!")
 
+def cadastrar_produto(nome, preco, estoque):
+    """
+    Insere um novo produto no banco de dados.
+    Recebe o nome, preço e estoque como parâmetros.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO produtos(nome_produto, preco, estoque) VALUES (?, ?, ?)",
+        (nome, preco, estoque)
+    )
+
+    # INSERT INTO -> comando para inserir uma nova linha na tabela
+    # VALUES (?, ?, ?) -> os ? são substituídos pelos valores de forma segura
+    # Nunca coloque os valores direto na string! Os ? protegem contra ataques
+
+    conn.commit()
+    conn.close()
+
+def listar_produtos():
+    """
+    Retorna todos os produtos cadastrados no banco.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id, nome_produto, preco, estoque FROM produtos"
+    )
+
+    # SELECT -> busca dados do banco
+    # Estamos pedindo todas as colunas da tabela produtos
+
+    produtos = cursor.fetchall()
+    # fetchall() -> traz todos os resultados de uma vez
+    # Cada produto vira uma tupla: (id, nome, preco, estoque)
+
+    conn.close()
+    return produtos
+
+def buscar_produto_por_id(id):
+    """
+    Retorna um único produto pelo seu id.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id, nome_produto, preco, estoque FROM produtos WHERE id = ?",
+        (id,)
+    )
+    # WHERE id = ? -> filtra apenas o produto com aquele id
+
+    produto = cursor.fetchone()
+    # fetchone() -> traz apenas um resultado
+
+    conn.close()
+    return produto
+
+def atualizar_produto(id, nome, preco, estoque):
+    """
+    Atualiza os dados de um produto existente.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE produtos SET nome_produto = ?, preco = ?, estoque = ? WHERE id = ?",
+        (nome, preco, estoque, id)
+    )
+    # UPDATE -> atualiza uma linha existente
+    # SET -> define os novos lugares
+    # WHERE id = ? -> garante que só esse produto seja alterado
+
+    conn.commit()
+    conn.close()
+
+def deletar_produto(id):
+    """
+    Remove um produto do banco pelo id.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM produtos WHERE id = ?",
+        (id,)
+    )
+    # DELETE FROM -> remove a linha da tabela
+    # WHERE id = ? -> garante que só esse produto seja removido
+
+    conn.commit()
+    conn.close()
+
 if __name__ == "__main__":
     criar_tabelas()
