@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Métricas</title>
+</head>
+<body>
+
+    <h1>📈 Métricas e Relatórios</h1>
+    <a href="/">← Voltar ao início</a>
+
+    <!-- CARDS DE RESUMO -->
+    <h2>Resumo Geral</h2>
+    <table border="1" cellpadding="12">
+        <tr>
+            <th>Total de Vendas</th>
+            <th>Faturamento Total</th>
+            <th>Ticket Médio</th>
+        </tr>
+        <tr>
+            <td>{{ dados.total_vendas }}</td>
+            <td>R$ {{ "%.2f"|format(dados.faturamento) }}</td>
+            <td>R$ {{ "%.2f"|format(dados.ticket_medio) }}</td>
+        </tr>
+    </table>
+    {# dados.total_vendas → acessa a chave "total_vendas" do dicionário retornado pelo banco #}
+
+    <hr>
+
+    <!-- PRODUTOS MAIS VENDIDOS -->
+    <h2>🏆 Produtos Mais Vendidos</h2>
+    {% if dados.mais_vendidos %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Produto</th>
+                <th>Quantidade Vendida</th>
+            </tr>
+            {% for item in dados.mais_vendidos %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Nenhuma venda registrada ainda.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- FATURAMENTO POR DIA -->
+    <h2>📅 Faturamento dos Últimos 7 Dias</h2>
+    {% if dados.faturamento_por_dia %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Data</th>
+                <th>Faturamento</th>
+            </tr>
+            {% for dia in dados.faturamento_por_dia %}
+            <tr>
+                <td>{{ dia[0] }}</td>
+                <td>R$ {{ "%.2f"|format(dia[1]) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Nenhuma venda registrada ainda.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- ALERTAS DE ESTOQUE BAIXO -->
+    <h2>⚠️ Produtos com Estoque Baixo</h2>
+    {% if dados.estoque_baixo %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Produto</th>
+                <th>Estoque Atual</th>
+            </tr>
+            {% for item in dados.estoque_baixo %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>✅ Todos os produtos estão com estoque normal.</p>
+    {% endif %}
+
+</body>
+</html>

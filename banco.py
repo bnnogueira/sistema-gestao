@@ -235,5 +235,93 @@ def cancelar_venda(venda_id):
     conn.close()
     return True, "Venda cancelada e estoque restaurado!"
 
+def estoque_atual():
+    """
+    Retorna todos os produtos com seu estoque atual.
+    Usaremos isso para exibir a página de estoque.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id, nome_produto, preco, estoque FROM produtos ORDER BY estoque ASC"
+    )
+    # ORDER BY estoque ASC → ordena do menor estoque para o maior
+    # Assim produtos com pouco estoque aparecem primeiro, facilitando a visualização
+
+    produtos = cursor.fetchall()
+    conn.close()
+    return produtos
+
+def metricas():
+    """
+    Retorna um dicionário com os principais indicadores do sistema.
+    Um dicionário é uma estrutura Python que guarda pares chave:valor.
+    Ex: {"total_vendas": 50, "faturamento": 1500.00}
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # Total de vendas realizadas
+    cursor.execute("SELECT COUNT(*) FROM vendas")
+    total_vendas = cursor.fetchone()[0]
+    # COUNT(*) → conta o número de linhas da tabela
+    # fetchone()[0] → pega o primeiro (e único) valor retornado
+
+    # Faturamento total
+    cursor.execute("SELECT SUM(total) FROM vendas")
+    faturamento = cursor.fetchone()[0] or 0.0
+    # SUM(total) → soma todos os valores da coluna total
+    # or 0.0 → se não houver vendas, SUM retorna None; usamos 0.0 no lugar
+
+    # Ticket médio (faturamento dividido pelo número de vendas)
+    ticket_medio = faturamento / total_vendas if total_vendas > 0 else 0.0
+    # Evita divisão por zero caso não haja vendas ainda
+
+    # Produtos mais vendidos (top 5)
+    cursor.execute("""
+        SELECT produtos.nome_produto, SUM(vendas.quantidade) as total_vendido
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        GROUP BY vendas.produto_id
+        ORDER BY total_vendido DESC
+        LIMIT 5
+    """)
+    # GROUP BY produto_id → agrupa todas as vendas do mesmo produto
+    # SUM(quantidade) → soma as quantidades de cada grupo
+    # ORDER BY total_vendido DESC → mais vendidos primeiro
+    # LIMIT 5 → apenas os 5 primeiros
+    mais_vendidos = cursor.fetchall()
+
+    # Faturamento por dia (últimos 7 dias)
+    cursor.execute("""
+        SELECT DATE(data_venda) as dia, SUM(total) as faturamento_dia
+        FROM vendas
+        GROUP BY dia
+        ORDER BY dia DESC
+        LIMIT 7
+    """)
+    # DATE(data_venda) → extrai apenas a data (sem hora) do campo data_venda
+    # GROUP BY dia → agrupa todas as vendas do mesmo dia
+    faturamento_por_dia = cursor.fetchall()
+
+    # Produtos com estoque baixo (menos de 10 unidades)
+    cursor.execute(
+        "SELECT nome_produto, estoque FROM produtos WHERE estoque < 10 ORDER BY estoque ASC"
+    )
+    estoque_baixo = cursor.fetchall()
+
+    conn.close()
+
+    # Retorna tudo num dicionário para o HTML usar
+    return {
+        "total_vendas"       : total_vendas,
+        "faturamento"        : faturamento,
+        "ticket_medio"       : ticket_medio,
+        "mais_vendidos"      : mais_vendidos,
+        "faturamento_por_dia": faturamento_por_dia,
+        "estoque_baixo"      : estoque_baixo
+    }
+
 if __name__ == "__main__":
     criar_tabelas()

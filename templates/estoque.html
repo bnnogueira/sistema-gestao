@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Estoque</title>
+</head>
+<body>
+
+    <h1>📊 Controle de Estoque</h1>
+    <a href="/">← Voltar ao início</a>
+
+    <h2>Situação Atual</h2>
+
+    {% if produtos %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>ID</th>
+                <th>Produto</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Situação</th>
+            </tr>
+            {% for p in produtos %}
+            <tr>
+                <td>{{ p[0] }}</td>
+                <td>{{ p[1] }}</td>
+                <td>R$ {{ "%.2f"|format(p[2]) }}</td>
+                <td>{{ p[3] }}</td>
+                <td>
+                    {% if p[3] == 0 %}
+                        ⛔ Sem estoque
+                    {% elif p[3] < 10 %}
+                        ⚠️ Estoque baixo
+                    {% else %}
+                        ✅ Normal
+                    {% endif %}
+                </td>
+                {# p[3] é o estoque — verificamos a quantidade e exibimos o alerta certo #}
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Nenhum produto cadastrado ainda.</p>
+    {% endif %}
+
+</body>
+</html>

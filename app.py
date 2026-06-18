@@ -102,6 +102,24 @@ def cancelar_venda(venda_id):
     banco.cancelar_venda(venda_id)
     return redirect(url_for("vendas"))
 
+# ------------------
+# ESTOQUE
+# ------------------
+@app.route("/estoque")
+def estoque():
+    # Exibe a página de visualização do estoque atual.
+    produtos = banco.estoque_atual()
+    return render_template("estoque.html", produtos=produtos)
+
+# ------------------
+# MÉTRICAS
+# ------------------
+@app.route("/metricas")
+def metricas():
+    # Exibe a página de métricas e relatórios do sistema.
+    dados = banco.metricas()
+    return render_template("metricas.html", dados=dados)
+
 # Inicia o servidor Flask
 if __name__ == "__main__":
     app.run(debug=True)
