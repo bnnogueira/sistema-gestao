@@ -68,6 +68,40 @@ def deletar_produto(id):
     banco.deletar_produto(id)
     return redirect(url_for("produtos"))
 
+# ------------------
+# VENDAS
+# ------------------
+@app.route("/vendas")
+def vendas():
+    # Exibe o formulário de venda e a lista de vendas realizadas.
+    lista_vendas   = banco.listar_vendas()
+    lista_produtos = banco.listar_produtos()
+    return render_template("vendas.html", vendas=lista_vendas, produtos=lista_produtos)
+
+@app.route("/vendas/registrar", methods=["POST"])
+def registrar_venda():
+    # Recebe os dados do formulário e registra a venda.
+    produto_id = int(request.form["produto_id"])
+    quantidade = int(request.form["quantidade"])
+
+    # Busca o preço do produto para calcular o total
+    produto = banco.buscar_produto_por_id(produto_id)
+    total   = produto[2] * quantidade
+    # produto[2] → preço (terceira coluna do SELECT)
+
+    sucesso, mensagem = banco.registrar_venda(produto_id, quantidade, total)
+    # A função retorna dois valores:
+    # sucesso → True ou False
+    # mensagem → texto explicando o resultado
+
+    return redirect(url_for("vendas"))
+
+@app.route("/vendas/cancelar/<int:venda_id>")
+def cancelar_venda(venda_id):
+    # Cancela uma venda e restaura o estoque.
+    banco.cancelar_venda(venda_id)
+    return redirect(url_for("vendas"))
+
 # Inicia o servidor Flask
 if __name__ == "__main__":
     app.run(debug=True)
