@@ -147,40 +147,38 @@ def deletar_produto(id):
     conn.close()
 
 def registrar_venda(produto_id, quantidade, total):
-    # Registra uma nova venda e desconta do estoque automaticamente
     conn = conectar()
     cursor = conn.cursor()
 
-    # Primeiro verifica se tem estoque suficiente
     cursor.execute(
         "SELECT estoque FROM produtos WHERE id = ?",
         (produto_id,)
     )
+    resultado = cursor.fetchone()
 
-    if produto is None:
+    if resultado is None:
         conn.close()
         return False, "Produto não encontrado."
-    if produto[0] < quantidade:
+
+    estoque_atual = resultado[0]
+    # Guardamos o estoque em uma variável separada para ficar mais claro
+
+    if estoque_atual < quantidade:
         conn.close()
         return False, "Estoque insuficiente."
-    # Se o estoque disponível for menor que a quantidade pedida, cancela a venda.
 
-    # Registra a venda
     from datetime import datetime
-    data_atual = datetime.now().strftime("%Y-%m-%d")
-    # strftime formata a data
+    data_atual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     cursor.execute(
         "INSERT INTO vendas (produto_id, quantidade, total, data_venda) VALUES (?, ?, ?, ?)",
         (produto_id, quantidade, total, data_atual)
     )
 
-    # Desconta do estoque
     cursor.execute(
         "UPDATE produtos SET estoque = estoque - ? WHERE id = ?",
         (quantidade, produto_id)
     )
-    # Estoque = estoque = ? -> subtrai a quantidade vendida do estoque atual
 
     conn.commit()
     conn.close()
