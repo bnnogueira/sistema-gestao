@@ -146,5 +146,96 @@ def deletar_produto(id):
     conn.commit()
     conn.close()
 
+def registrar_venda(produto_id, quantidade, total):
+    # Registra uma nova venda e desconta do estoque automaticamente
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # Primeiro verifica se tem estoque suficiente
+    cursor.execute(
+        "SELECT estoque FROM produtos WHERE id = ?",
+        (produto_id,)
+    )
+
+    if produto is None:
+        conn.close()
+        return False, "Produto não encontrado."
+    if produto[0] < quantidade:
+        conn.close()
+        return False, "Estoque insuficiente."
+    # Se o estoque disponível for menor que a quantidade pedida, cancela a venda.
+
+    # Registra a venda
+    from datetime import datetime
+    data_atual = datetime.now().strftime("%Y-%m-%d")
+    # strftime formata a data
+
+    cursor.execute(
+        "INSERT INTO vendas (produto_id, quantidade, total, data_venda) VALUES (?, ?, ?, ?)",
+        (produto_id, quantidade, total, data_atual)
+    )
+
+    # Desconta do estoque
+    cursor.execute(
+        "UPDATE produtos SET estoque = estoque - ? WHERE id = ?",
+        (quantidade, produto_id)
+    )
+    # Estoque = estoque = ? -> subtrai a quantidade vendida do estoque atual
+
+    conn.commit()
+    conn.close()
+    return True, "Venda registrada com sucesso!"
+
+def listar_vendas():
+    # Retorna as vendas com o nome do produto.
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT vendas.id, produtos.nome_produto, vendas.quantidade,
+               vendas.total, vendas.data_venda
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        ORDER BY vendas.data_venda DESC
+    """)
+    # JOIN → une as duas tabelas para trazer o nome do produto junto com a venda
+    # ORDER BY data_venda DESC → mais recentes primeiro
+
+    vendas = cursor.fetchall()
+    conn.close()
+    return vendas
+
+def cancelar_venda(venda_id):
+    # Cancela uma venda e devolve a quantidade ao estoque.
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # Busca os dados da venda antes de deletar
+    cursor.execute(
+        "SELECT produto_id, quantidade FROM vendas WHERE id = ?",
+        (venda_id,)
+    )
+    venda = cursor.fetchone()
+
+    if venda is None:
+        conn.close()
+        return False, "Venda não encontrada."
+
+    # Devolve ao estoque
+    cursor.execute(
+        "UPDATE produtos SET estoque = estoque + ? WHERE id = ?",
+        (venda[1], venda[0])
+    )
+
+    # Deleta a venda
+    cursor.execute(
+        "DELETE FROM vendas WHERE id = ?",
+        (venda_id,)
+    )
+
+    conn.commit()
+    conn.close()
+    return True, "Venda cancelada e estoque restaurado!"
+
 if __name__ == "__main__":
     criar_tabelas()
