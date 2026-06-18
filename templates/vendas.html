@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Vendas</title>
+</head>
+<body>
+
+    <h1>🛒 Registro de Vendas</h1>
+    <a href="/">← Voltar ao início</a>
+
+    <!-- FORMULÁRIO DE VENDA -->
+    <h2>Nova Venda</h2>
+    <form action="/vendas/registrar" method="POST">
+
+        <label>Produto:</label>
+        <select name="produto_id" id="produto_select" required>
+            <option value="">-- Selecione um produto --</option>
+            {% for p in produtos %}
+                <option value="{{ p[0] }}"
+                        data-preco="{{ p[2] }}"
+                        data-estoque="{{ p[3] }}">
+                    {{ p[1] }} — R$ {{ "%.2f"|format(p[2]) }} (Estoque: {{ p[3] }})
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Quantidade:</label>
+        <input type="number" name="quantidade" id="quantidade" min="1" value="1" required>
+        <br><br>
+
+        <label>Total estimado:</label>
+        <input type="text" id="total_estimado" value="R$ 0,00" disabled>
+        <br><br>
+
+        <button type="submit">✅ Registrar Venda</button>
+    </form>
+
+    <hr>
+
+    <!-- LISTA DE VENDAS -->
+    <h2>Vendas Realizadas</h2>
+    {% if vendas %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>ID</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Total</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+            {% for v in vendas %}
+            <tr>
+                <td>{{ v[0] }}</td>
+                <td>{{ v[1] }}</td>
+                <td>{{ v[2] }}</td>
+                <td>R$ {{ "%.2f"|format(v[3]) }}</td>
+                <td>{{ v[4] }}</td>
+                <td>
+                    <a href="/vendas/cancelar/{{ v[0] }}"
+                       onclick="return confirm('Deseja cancelar esta venda?')">
+                       ❌ Cancelar
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Nenhuma venda registrada ainda.</p>
+    {% endif %}
+
+    <!-- SCRIPT: calcula o total automaticamente ao selecionar produto/quantidade -->
+    <script>
+        function calcularTotal() {
+            const select    = document.getElementById("produto_select");
+            const quantidade = parseInt(document.getElementById("quantidade").value) || 0;
+            const opcao     = select.options[select.selectedIndex];
+            const preco     = parseFloat(opcao.getAttribute("data-preco")) || 0;
+            const total     = preco * quantidade;
+
+            document.getElementById("total_estimado").value =
+                "R$ " + total.toFixed(2).replace(".", ",");
+        }
+
+        document.getElementById("produto_select").addEventListener("change", calcularTotal);
+        document.getElementById("quantidade").addEventListener("input", calcularTotal);
+        // addEventListener → "escuta" mudanças no campo e chama calcularTotal()
+    </script>
+
+</body>
+</html>
